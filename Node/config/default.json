@@ -1,0 +1,4 @@
+{
+    "mongoURI":
+      "mongodb+srv://muneeb:mernstack@cluster0.bce25.mongodb.net/category?retryWrites=true&w=majority"
+}
