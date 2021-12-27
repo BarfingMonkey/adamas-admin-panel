@@ -3,7 +3,7 @@ const router = express.Router()
 const bodyParser = require('body-parser')
 const User= require('../../models/User')
 const jwt = require('jsonwebtoken');
-
+const passport = require('passport')
 router.use(bodyParser.json()) // for parsing application/json
 router.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 
@@ -82,5 +82,17 @@ router.post('/login', async(req,res)=>{
 router.get('/logout', async(req,res)=>{
   res.cookie('jwt', '', {maxAge: 1})
 })
+
+// auth with google+
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile','email']
+}));
+
+// callback route for google to redirect to
+// hand control to passport to use code to grab profile info
+router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
+  // res.send(req.user);
+  res.redirect('http://localhost:3000/').json({user: req.user})
+});
 
 module.exports = router;
