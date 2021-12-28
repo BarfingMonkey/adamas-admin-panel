@@ -7,8 +7,9 @@ const passport = require('passport');
 var cors = require('cors'); //Connect Front end routes with Backend
 const connectDB = require('./config/db'); //DB Connection 
 const config= require('config')
-const expressSession = require('express-session');
-const expressSessionKey = config.get('expressSession');
+const cookieSession = require('cookie-session');
+const expressSession= require('express-session')
+const cookieSessionKey = config.get('cookieSession');
 const passportSetup = require('./config/setup-passport')
 
 //Connect Database
@@ -21,10 +22,9 @@ const authentication = require('./Routes/api/authentication')
 const cart = require('./Routes/api/cart')
 
 //set up session cookies
-app.use(expressSession({
-  secret: "adamasproject",
-  resave: false,
-  saveUninitialized: false
+app.use(cookieSession({
+  maxAge: 24 * 60 * 60 * 1000,
+  keys: [cookieSessionKey]
 }));
 
 //cors
@@ -35,11 +35,19 @@ app.use(cors({
   }));
   app.options('*', cors());
 //Middleware
+
+// app.use(
+//   expressSession({
+//     secret: cookieSessionKey,
+//     resave: true,
+//     saveUninitialized: true,
+//   })
+// );
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.urlencoded({extended: true}))
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser(cookieSessionKey));
 //for parsing formdata
 app.use(upload.array());
 // use Routes

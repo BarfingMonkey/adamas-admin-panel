@@ -1,9 +1,12 @@
 const passport = require('passport');
 const GoogleStrategy= require('passport-google-oauth20').Strategy
+const LocalStrategy= require('passport-local').Strategy
 const config= require('config')
 const clientID = config.get('clientID');
 const clientSecret = config.get('clientSecret')
 const User = require('../models/User')
+const bcrypt= require('bcryptjs')
+const handleErrors= require('../Routes/api/authentication')
 
 passport.serializeUser((user, done)=>{
     done(null, user.id)
@@ -15,7 +18,7 @@ passport.deserializeUser((id,done)=>{
     })
 })
 
-passport.use(
+passport.use("google",
     new GoogleStrategy({
         callbackURL: "/api/google/redirect",
         clientID: clientID,
@@ -42,3 +45,24 @@ passport.use(
         })
     })
 )
+
+
+passport.use(
+    new LocalStrategy({ usernameField: 'email' },
+    (username, password, done) => {
+        console.log('inside local strategy')
+        User.findOne({ email:username }, (err, user) => {
+            if (err) throw err;
+            if (!user) return done(null, false);
+            bcrypt.compare(password, user.password, (err, result) => {
+                if (err) throw err;
+                if (result === true) {
+                    return done(null, user);
+                }
+                else {
+                    return done(null, false);
+                }
+            });
+        });
+    })
+);

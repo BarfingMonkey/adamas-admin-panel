@@ -3,5 +3,5 @@
       "mongodb+srv://muneeb:mernstack@cluster0.bce25.mongodb.net/category?retryWrites=true&w=majority",
     "clientID": "671730973775-elk4ff162chpeko42su4kl9gofsp53kr.apps.googleusercontent.com",
     "clientSecret": "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",
-    "expressSession": "adamasproject"
+    "cookieSession": "adamasproject"
 }
