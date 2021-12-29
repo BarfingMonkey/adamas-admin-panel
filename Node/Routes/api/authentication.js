@@ -83,24 +83,25 @@ router.post('/signup', async(req,res)=>{
   const { name, email, password } = req.body;
   try {
     const user = await User.create({ name, email, password });
-    res.status(201).json({ user: user});
+    res.status(201).json("Signup Successful");
   }
   catch(err) {
     const errors = handleErrors(err);
-    res.json({ errors });
+    res.json("Signup Failed");
   }
 })
 router.post("/login", (req, res, next) => {
+  console.log('login hit')
   passport.authenticate("local", (err, user, info) => {
     if (err) throw err;
     console.log(user)
     console.log(err)
     console.log(info)
-    if (!user) res.send("No User Exists");
+    if (!user) res.json("No User Exists");
     else {
       req.logIn(user, (err) => {
         if (err) throw err;
-        res.send("Successfully Authenticated");
+        res.json("Successfully Authenticated");
         console.log(req.user);
       });
     }
@@ -109,7 +110,9 @@ router.post("/login", (req, res, next) => {
 
 
 router.get('/logout', async(req,res)=>{
-  res.cookie('jwt', '', {maxAge: 1})
+  console.log('logout api hit')
+  req.logout();
+  res.json("logout successful")
 })
 
 // auth with google+
@@ -120,8 +123,8 @@ router.get('/google', passport.authenticate('google', {
 // callback route for google to redirect to
 // hand control to passport to use code to grab profile info
 router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
-  // res.send(req.user);
   res.redirect('http://localhost:3000/')
+  res.send(req.user);
 });
 router.get('/user',(req,res)=>{
   res.send({user: req.user})

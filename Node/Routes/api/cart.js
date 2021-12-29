@@ -6,20 +6,31 @@ router.use(bodyParser.urlencoded({ extended: true })) // for parsing application
 
 const Cart= require('../../models/Cart')
 const CartItem= require('../../models/CartItem')
+const Product = require('../../models/Product')
 
 router.get('/publicsite/cart/:id', async(req,res)=>{
-    const {id}= req.params;
-    const cart = await Cart.findOne({userId:id})
+    const {id:userId}= req.params;
+    const cart = await Cart.findOne({userId})
+    let products= []
+    let cartItems = []
     if(!cart){
         res.json({"message": "Cart not found"})
     }
     else{
-        const data= CartItem.find({cartId:cart._id})
-            .then(data=>{
-                res.json(data)
+        console.log()
+        await CartItem.find({cartId:cart._id})
+            .then((data)=>{
+                cartItems=data
             })
             .catch(error=>console.log(error))
-        console.log(`cart items:${data}`)
+        
+        console.log(cartItems)
+        for(let cartItem of cartItems){
+            await Product.findOne({_id: cartItem.productId })
+                .then(product=>products.push(product))
+        }
+        console.log('products', products)
+        res.json({cartItems,products})
     }
 })
 
