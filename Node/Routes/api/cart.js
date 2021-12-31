@@ -10,45 +10,46 @@ const Product = require('../../models/Product')
 
 router.get('/publicsite/cart/:id', async(req,res)=>{
     const {id:userId}= req.params;
+    console.log('userId',userId)
     const cart = await Cart.findOne({userId})
-    let products= []
-    let cartItems = []
+    console.log('cart',cart)
     if(!cart){
         res.json({"message": "Cart not found"})
     }
     else{
-        console.log()
-        await CartItem.find({cartId:cart._id})
+        await CartItem.find({cartId:cart._id}).populate("productInfo")
             .then((data)=>{
-                cartItems=data
+                console.log(data)
+                res.json(data)
             })
-            .catch(error=>console.log(error))
-        
-        console.log(cartItems)
-        for(let cartItem of cartItems){
-            await Product.findOne({_id: cartItem.productId })
-                .then(product=>products.push(product))
-        }
-        console.log('products', products)
-        res.json({cartItems,products})
+            .catch(error=>{
+                console.log(error)
+                res.json({message : "CartItem error"})
+            })
     }
 })
 
 router.post('/publicsite/cart/:id', async(req,res)=>{
     const {id:userId}= req.params;
+    console.log(req.body)
     const {productId, qty}= req.body;
     let cart = await Cart.findOne({userId})
+    let product = await Product.findOne({_id:productId})
     if(!cart){
         cart = await Cart.create({userId})
     }
-    let cartItem= await CartItem.findOne({cartId:cart._id,productId})
+    let cartItem= await CartItem.findOne({productInfo: productId})
+    console.log('cartItem: ',cartItem)
+    console.log('productID ',productId)
     if(cartItem){
+        console.log("message : Product is already in Cart")
         res.json({message : "Product is already in Cart"})
     }
     else{
-        cartItem= await CartItem.create({cartId:cart._id,productId,qty})
+        cartItem = await CartItem.create({cartId : cart._id, productInfo : product ,qty})
             .then(data=>{
                 res.json({message : "Item successfully added to cart"})
+                console.log(data)
             })
             .catch(error=>console.log(error))
     }
@@ -66,16 +67,23 @@ router.delete('/publicsite/cart/:cartItemId', async(req,res)=>{
 
 router.put('/publicsite/cart/:cartItemId', async(req,res)=>{
     const id = req.params.cartItemId;
-    console.log(req.body)
+    console.log('req.body',req.body)
     const {qty}= req.body;
-    console.log(typeof qty, qty)
-    CartItem.findByIdAndUpdate(id, {qty})
-        .then(data=>{
-            //console.log(data)
-            console.log('Updated!')
-            res.json(data)
-        })
-        .catch(err=>res.json(err))
+    const updatedCart= await CartItem.findByIdAndUpdate(id, {qty})
+    if(!updatedCart){
+        res.json({message : "Error while updating"})
+    }
+    else{
+        // await CartItem.find({cartId:updatedCart.cartId})
+        // .then(data=>{
+        //     //console.log(data)
+        //     console.log('Updated!')
+        //     res.json(data)
+        // })
+        // .catch(err=>res.json(err))
+        res.json({message: "Updated!"})
+    }
+    
 })
 
 module.exports = router;

@@ -5,9 +5,8 @@ const cartItemSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    productId:{
-        type: String,
-        required: true
+    productInfo:{
+        type: mongoose.Schema.Types.ObjectId, ref: 'Product'
     },
     qty:{
         type: String,
