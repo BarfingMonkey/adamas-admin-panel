@@ -46,44 +46,37 @@ router.post('/publicsite/cart/:id', async(req,res)=>{
         res.json({message : "Product is already in Cart"})
     }
     else{
-        cartItem = await CartItem.create({cartId : cart._id, productInfo : product ,qty})
-            .then(data=>{
-                res.json({message : "Item successfully added to cart"})
-                console.log(data)
+        cartItem = await CartItem.create({cartId : cart._id, productInfo : product, qty})
+        console.log(cartItem)
+        await CartItem.find({cartId:cartItem.cartId}).populate("productInfo")
+            .then((data)=>{
+                //console.log(data)
+                res.json(data)
             })
-            .catch(error=>console.log(error))
     }
 })
 router.delete('/publicsite/cart/:cartItemId', async(req,res)=>{
     const id = req.params.cartItemId;
-    CartItem.findByIdAndDelete(id)
-        .then(data=>{
-            console.log(data)
-            console.log('Deleted!')
+    const deletedCart = await CartItem.findByIdAndDelete(id)
+    console.log(deletedCart)
+    await CartItem.find({cartId:deletedCart.cartId}).populate("productInfo")
+        .then((data)=>{
+            //console.log(data)
             res.json(data)
         })
-        .catch(err=>res.json(err))
 })
 
 router.put('/publicsite/cart/:cartItemId', async(req,res)=>{
     const id = req.params.cartItemId;
-    console.log('req.body',req.body)
+    //console.log('req.body',req.body)
     const {qty}= req.body;
-    const updatedCart= await CartItem.findByIdAndUpdate(id, {qty})
-    if(!updatedCart){
-        res.json({message : "Error while updating"})
-    }
-    else{
-        // await CartItem.find({cartId:updatedCart.cartId})
-        // .then(data=>{
-        //     //console.log(data)
-        //     console.log('Updated!')
-        //     res.json(data)
-        // })
-        // .catch(err=>res.json(err))
-        res.json({message: "Updated!"})
-    }
-    
+    console.log(qty)
+    const updatedCart= await CartItem.findByIdAndUpdate(id, {qty});
+    console.log(updatedCart)
+    await CartItem.find({cartId:updatedCart.cartId}).populate("productInfo")
+        .then((data)=>{
+            res.json(data)
+        }) 
 })
 
 module.exports = router;
