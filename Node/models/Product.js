@@ -1,20 +1,20 @@
 const mongoose = require('mongoose')
 
-const productSchema= new mongoose.Schema({    
-    name:{        
-        type: String,        
+const productSchema= new mongoose.Schema({
+    name:{
+        type: String,
         //required:true,        
-        lowercase: true,    
-    },    
-    description:{        
-        type: String,        
+        lowercase: true,
+    },
+    description:{
+        type: String,
         //required: true,    
     },
     status:{
         type: Boolean
     },
-    img:{   
-        type: String  
+    img:{
+        type: String
     },
     price:{
         type: String
@@ -25,7 +25,8 @@ const productSchema= new mongoose.Schema({   
     catId:{ 
         type: String
     }
-},  {
+},
+    {
     timestamps: { createdAt: 'created_on', updatedAt: 'updated_on'}
     }
 );

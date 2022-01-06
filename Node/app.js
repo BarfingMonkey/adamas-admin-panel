@@ -20,6 +20,7 @@ const products = require('./Routes/api/products')
 const publicsite = require('./Routes/api/publicsite')
 const authentication = require('./Routes/api/authentication')
 const cart = require('./Routes/api/cart')
+const payment = require('./Routes/api/payment')
 
 //set up session cookies
 app.use(cookieSession({
@@ -56,6 +57,8 @@ app.use('/api', products)
 app.use('/api', publicsite)
 app.use('/api', authentication)
 app.use('/api', cart)
+app.use('/api', payment)
+
 app.use(express.static('uploads'))
 app.listen(8000, function() {
   console.log('App running on port 8000');
