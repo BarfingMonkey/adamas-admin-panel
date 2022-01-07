@@ -11,6 +11,7 @@ const cookieSession = require('cookie-session');
 const expressSession= require('express-session')
 const cookieSessionKey = config.get('cookieSession');
 const passportSetup = require('./config/setup-passport')
+const cron = require('node-cron')
 
 //Connect Database
 connectDB();
@@ -22,6 +23,7 @@ const authentication = require('./Routes/api/authentication')
 const cart = require('./Routes/api/cart')
 const payment = require('./Routes/api/payment')
 
+const Cart = require('./models/Cart')
 //set up session cookies
 app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000,
@@ -59,6 +61,20 @@ app.use('/api', authentication)
 app.use('/api', cart)
 app.use('/api', payment)
 
+//cron jobs
+cron.schedule('0 1 * * *', async() => {
+  await Cart.find({created_on: {$lt: new Date((new Date())-1000*3600*24*2)}, status:1})
+    .then(carts=>{
+      (carts && carts.length >0) ? carts.map(cart=>{
+        Cart.findByIdAndUpdate(cart._id, {status:3})
+          .then(updatedCart=>console.log(updatedCart))
+      })
+      : 'No Abdundant Cart Found'
+    })
+});
+
+
+//listening to port
 app.use(express.static('uploads'))
 app.listen(8000, function() {
   console.log('App running on port 8000');

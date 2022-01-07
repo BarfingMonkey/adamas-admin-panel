@@ -7,11 +7,14 @@ const stripe= require("stripe")("sk_test_51KDjaiKUwGjNfbg4AbKY8bO71UhZMTpnzvInui
 const mailgun = require("mailgun-js");
 const DOMAIN = "sandboxa3256060d2154a22b1b7f3cc306ecd4b.mailgun.org";
 const mg = mailgun({apiKey: "d2dc22a8dc2e4a55100ec47c354b36e6-0be3b63b-cace8e96", domain: DOMAIN});
+
 const Cart = require('../../models/Cart')
+const CartItem = require('../../models/CartItem')
+const Payment = require('../../models/Payment')
 
 router.post("/payment", async(req,res)=>{
-    console.log(req.body.cartId)
-    let {amount, id, userId} = req.body
+    console.log(req.body.card)
+    let {amount, id, userId, card} = req.body
     const data = {
         from: "Mailgun Sandbox <postmaster@sandboxa3256060d2154a22b1b7f3cc306ecd4b.mailgun.org>",
         to: "muneebahmad.mern@gmail.com",
@@ -20,23 +23,25 @@ router.post("/payment", async(req,res)=>{
         Regards.`
     };
     try{
-        const payment = await stripe.paymentIntents.create({
+        await stripe.paymentIntents.create({
             amount,
             currency:"USD",
             description: "Cart",
             payment_method: id,
             confirm: true
         })
-        await Cart.findOneAndUpdate({userId, status:1}, {status:2})
-            .then(res=>console.log('status updated: ', res))
+        const cart = await Cart.findOneAndUpdate({userId, status:1}, {status:2})
+        const cartItems = await CartItem.find({cartId:cart._id})
+        const payment = await Payment.create({userId ,paymentId:id, amount, cardNumber: card.number, cartItems})
+        console.log('cart: ', cart)
         console.log("Payment", payment)
         res.json({
             message: "Payment successful",
             success: true
         })
-        mg.messages().send(data, function (error, body) {
-            console.log(body);
-        });
+        // mg.messages().send(data, function (error, body) {
+        //     console.log(body);
+        // });
     }
     catch(error){
         console.log("Error",error)
