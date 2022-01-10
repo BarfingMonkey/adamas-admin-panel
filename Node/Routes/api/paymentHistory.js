@@ -8,11 +8,14 @@ const Payment= require('../../models/Payment')
 
 router.get('/publicsite/paymenthistory/:id', async(req,res)=>{
     const {id:userId}= req.params;
-    const paymentHistory = await Payment.find({userId}).populate("cartItems")
-    console.log('paymentHistory',paymentHistory)
-    
+    console.log('userId: ',userId);
+    const paymentHistory = await Payment.find({userId}).populate('cartItems');
+    console.log('paymentHistory', paymentHistory);
     if(!paymentHistory){
         return res.json({"message":"Payment not found"})
     }
-    
+    res.json(paymentHistory)
+    //res.json({"message":"Payment not found"})
 })
+
+module.exports= router; 

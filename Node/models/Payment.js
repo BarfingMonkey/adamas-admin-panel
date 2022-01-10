@@ -10,15 +10,15 @@ const paymentSchema = new mongoose.Schema({
     amount:{
         type: String
     },
-    cardNumber:{
-        type: String
-    },
     cartItems:[
         {
-            type: mongoose.Schema.Types.ObjectId, ref: 'CartItem'
+            type: mongoose.Schema.Types.ObjectId, ref: 'cartItem'
         }
     ],
-})
+},  {
+        timestamps: { createdAt: 'created_on', updatedAt: 'updated_on'}
+    }
+)
 
 const Payment = mongoose.model('payment', paymentSchema)
 module.exports = Payment;

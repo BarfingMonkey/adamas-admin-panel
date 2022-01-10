@@ -22,6 +22,7 @@ const publicsite = require('./Routes/api/publicsite')
 const authentication = require('./Routes/api/authentication')
 const cart = require('./Routes/api/cart')
 const payment = require('./Routes/api/payment')
+const paymentHistory = require('./Routes/api/paymentHistory')
 
 const Cart = require('./models/Cart')
 //set up session cookies
@@ -32,7 +33,7 @@ app.use(cookieSession({
 
 //cors
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://accounts.google.com/*'],
+  origin: ['http://localhost:3000', 'https://accounts.google.com/*', 'https://r.stripe.com/*'],
   credentials:true,
   exposedHeaders: ["set-cookie"]
   }));
@@ -60,6 +61,7 @@ app.use('/api', publicsite)
 app.use('/api', authentication)
 app.use('/api', cart)
 app.use('/api', payment)
+app.use('/api', paymentHistory)
 
 //cron jobs
 cron.schedule('0 1 * * *', async() => {

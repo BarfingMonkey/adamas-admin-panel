@@ -13,8 +13,7 @@ const CartItem = require('../../models/CartItem')
 const Payment = require('../../models/Payment')
 
 router.post("/payment", async(req,res)=>{
-    console.log(req.body.card)
-    let {amount, id, userId, card} = req.body
+    let {amount} = req.body
     const data = {
         from: "Mailgun Sandbox <postmaster@sandboxa3256060d2154a22b1b7f3cc306ecd4b.mailgun.org>",
         to: "muneebahmad.mern@gmail.com",
@@ -23,22 +22,17 @@ router.post("/payment", async(req,res)=>{
         Regards.`
     };
     try{
-        await stripe.paymentIntents.create({
+        // console.log('cart: ', cartItems)
+        // console.log('amount type: ', typeof amount, 'amount: ', amount)
+        // console.log('total type: ', typeof total, 'total: ', total)
+
+        const intent = await stripe.paymentIntents.create({
             amount,
             currency:"USD",
             description: "Cart",
-            payment_method: id,
-            confirm: true
         })
-        const cart = await Cart.findOneAndUpdate({userId, status:1}, {status:2})
-        const cartItems = await CartItem.find({cartId:cart._id})
-        const payment = await Payment.create({userId ,paymentId:id, amount, cardNumber: card.number, cartItems})
-        console.log('cart: ', cart)
-        console.log("Payment", payment)
-        res.json({
-            message: "Payment successful",
-            success: true
-        })
+        
+        res.json({client_secret: intent.client_secret, intent_id:intent.id})
         // mg.messages().send(data, function (error, body) {
         //     console.log(body);
         // });
@@ -52,4 +46,49 @@ router.post("/payment", async(req,res)=>{
     }
 })
 
+router.post('/confirmpayment', async(req, res) => {
+
+    //extract payment type from the client request
+    const paymentType = String(req.body.payment_type);
+  
+    //handle confirmed stripe transaction
+    if (paymentType == "stripe") {
+        let {amount, userId} = req.body
+        const cart = await Cart.findOne({userId, status:1})
+        const cartItems = await CartItem.find({cartId:cart._id}).populate('productInfo')
+        //logic to validate amount sent from the frontend
+        let total = 0;
+        for(let cartItem of cartItems){
+            console.log(parseInt(cartItem.qty))
+            console.log(parseInt(cartItem.productInfo.price))
+            total = total + (parseInt(cartItem.qty) * parseInt(cartItem.productInfo.price))
+        }
+        if(amount===total){
+            //get payment id for stripe
+            const clientid = String(req.body.payment_id);
+            //get the transaction based on the provided id
+            await stripe.paymentIntents.retrieve(
+                clientid,
+                async function(err, paymentIntent) {
+                    //handle errors
+                    if (err){
+                        console.log(err);
+                    }
+                    //respond to the client that the server confirmed the transaction
+                    if (paymentIntent.status === 'succeeded') {
+                        console.log("confirmed stripe payment: " + clientid);
+                        await Cart.findOneAndUpdate({userId, status:1}, {status:2})
+                        const payment = await Payment.create({userId ,paymentId:clientid, amount, cartItems})
+                        res.json({success: true});
+                    } else {
+                        res.json({success: false});
+                    }
+                }
+            );
+        }
+    } 
+    
+  })
+
 module.exports = router;
+
