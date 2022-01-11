@@ -38,7 +38,7 @@ router.post('/publicsite/cart/:id', async(req,res)=>{
     if(!cart){
         cart = await Cart.create({userId,  status: 1})
     }
-    let cartItem= await CartItem.findOne({productInfo: productId})
+    let cartItem= await CartItem.findOne({cartId:cart._id ,productInfo: productId})
     console.log('cartItem: ',cartItem)
     console.log('productID ',productId)
     if(cartItem){

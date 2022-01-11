@@ -86,10 +86,12 @@ router.post('/signup', async(req,res)=>{
     res.status(201).json("Signup Successful");
   }
   catch(err) {
-    const errors = handleErrors(err);
+    //const errors = handleErrors(err);
+    console.log(err)
     res.json("Signup Failed");
   }
 })
+
 router.post("/login", (req, res, next) => {
   console.log('login hit')
   passport.authenticate("local", (err, user, info) => {
@@ -118,7 +120,7 @@ router.get('/logout', async(req,res)=>{
 // auth with google+
 router.get('/google', passport.authenticate('google', {
   scope: ['profile','email']
-}));
+}));  
 
 // callback route for google to redirect to
 // hand control to passport to use code to grab profile info
